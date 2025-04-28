@@ -1,0 +1,87 @@
+.add {
+  display: flex;
+  justify-content: center;
+  .container {
+    width: 1200px;
+    padding: 50px 0;
+
+    h1 {
+      color: gray;
+      font-weight: 300;
+      margin-bottom: 30px;
+    }
+    .sections {
+      display: flex;
+      justify-content: space-between;
+      gap: 100px;
+    }
+    .left,
+    .right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: space-between;
+      flex: 1;
+      label {
+        color: gray;
+        font-size: 18px;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 20px;
+      }
+
+      .images {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .image-inputs {
+          display: flex;
+          input {
+            padding: 20px 0;
+          }
+        }
+      }
+
+      button {
+        background-color: #1dbf73;
+        color: white;
+        font-weight: 500;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 18px;
+      }
+
+      .add {
+        display: flex;
+        justify-content: space-between;
+        input {
+          width: 80%;
+        }
+      }
+      .added-featurs{
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: start;
+
+        button{
+          font-size: 15px;
+          background: transparent;
+          color: black;
+          font-weight: 400;
+          color: red;
+          border: 1px solid red;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+      }
+    }
+  }
+}
