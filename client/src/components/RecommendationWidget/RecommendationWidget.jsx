@@ -12,53 +12,54 @@ const RecommendationWidget = ({ userId = "user123" }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [categories, setCategories] = useState(['all']);
 
-  // Fetch recommendations when component mounts or userId changes
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Define fetchRecommendations outside of useEffect so we can reuse it
+  const fetchRecommendations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // First, ensure we have a user profile
-        await axios.post(`${API_URL}/user_profile`, {
-          user_id: userId,
-          name: `User ${userId}`,
-          preferences: {
-            "AI Artists": 0.8,
-            "Logo Design": 0.6,
-            "Social Media": 0.5
+      // First, ensure we have a user profile
+      await axios.post(`${API_URL}/user_profile`, {
+        user_id: userId,
+        name: `User ${userId}`,
+        preferences: {
+          "AI Artists": 0.8,
+          "Logo Design": 0.6,
+          "Social Media": 0.5
+        }
+      });
+
+      // Then fetch recommendations
+      const response = await axios.get(
+        `${API_URL}/recommendations/${userId}`
+      );
+
+      console.log("API Response:", response.data);
+
+      if (response.data.status === 'success') {
+        setRecommendations(response.data.recommendations);
+        
+        // Extract unique categories for filter
+        const uniqueCats = ['all'];
+        response.data.recommendations.forEach(item => {
+          if (item.category_name && !uniqueCats.includes(item.category_name)) {
+            uniqueCats.push(item.category_name);
           }
         });
-
-        // Then fetch recommendations
-        const response = await axios.get(
-          `${API_URL}/recommendations/${userId}`
-        );
-
-        console.log("API Response:", response.data);
-
-        if (response.data.status === 'success') {
-          setRecommendations(response.data.recommendations);
-          
-          // Extract unique categories for filter
-          const uniqueCats = ['all'];
-          response.data.recommendations.forEach(item => {
-            if (item.category_name && !uniqueCats.includes(item.category_name)) {
-              uniqueCats.push(item.category_name);
-            }
-          });
-          setCategories(uniqueCats);
-        } else {
-          setError('Failed to fetch recommendations');
-        }
-      } catch (err) {
-        console.error("API Error:", err);
-        setError(`Error: ${err.message}`);
-      } finally {
-        setLoading(false);
+        setCategories(uniqueCats);
+      } else {
+        setError('Failed to fetch recommendations');
       }
-    };
+    } catch (err) {
+      console.error("API Error:", err);
+      setError(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Fetch recommendations when component mounts or userId changes
+  useEffect(() => {
     fetchRecommendations();
   }, [userId]);
 
@@ -161,7 +162,7 @@ const RecommendationWidget = ({ userId = "user123" }) => {
           
           <button 
             className="refresh-button"
-            onClick={() => window.location.reload()}
+            onClick={fetchRecommendations}
           >
             Refresh Recommendations
           </button>

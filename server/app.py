@@ -40,12 +40,42 @@ def get_recommendations(user_id):
     """Get recommendations for a user"""
     print(f"Recommendations requested for user: {user_id}")
     
-    # Add mock explanations to gigs
+    import random
+    
+    # Create explanations based on user profile if it exists
+    user_profile = user_profiles.get(user_id, {})
+    
+    # Different explanations to add variety
+    explanations = [
+        "This matches your interest in AI art.",
+        "Based on your profile, you might enjoy this service.",
+        "This creator has excellent ratings and reviews.",
+        "This is popular among users with similar preferences.",
+        "This service is trending in this category.",
+        "This is more affordable than similar services.",
+        "You've shown interest in similar services recently."
+    ]
+    
+    # Add mock explanations to gigs with some randomization
     recommendations = []
     for gig in mock_data["gigs"]:
         gig_copy = gig.copy()
-        gig_copy["explanation"] = "This matches your interests."
+        
+        # Randomize price slightly to simulate different recommendations
+        price_variation = random.uniform(0.85, 1.15)  # 15% variation
+        gig_copy["price"] = round(gig["price"] * price_variation)
+        
+        # Add random explanation
+        gig_copy["explanation"] = random.choice(explanations)
+        
+        # Randomly add a special badge to some recommendations
+        if random.random() < 0.3:  # 30% chance
+            gig_copy["badge"] = random.choice(["New", "Trending", "Best Match"])
+            
         recommendations.append(gig_copy)
+    
+    # Shuffle recommendations to simulate different results each time
+    random.shuffle(recommendations)
     
     return jsonify({
         "status": "success",

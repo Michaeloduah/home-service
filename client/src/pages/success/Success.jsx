@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Register.scss";
+import "../register/Register.scss";
 import upload from "../../utils/upload.utils";
 import request from "../../utils/request.utils";
 
