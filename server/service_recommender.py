@@ -8,8 +8,8 @@ class ServiceRecommender:
     def __init__(self):
         """Initialize the recommendation system"""
         self.cards_df = None  # Service categories
-        self.projects_df = None  # Completed projects
-        self.gigs_df = None  # Available services
+        self.projects_df = None  # Creator projects
+        self.gigs_df = None  # Available gigs
         self.user_profiles = {}  # Store user profiles
         self.user_interactions = {}  # Store user interactions
         
@@ -24,63 +24,53 @@ class ServiceRecommender:
         for i, category in enumerate(self.cards_df['title']):
             self.category_mapping[category] = i
             
-        # Add a category ID to services based on their category_name
+        # Add a category ID to gigs based on their descriptions
         self.gigs_df['category_id'] = self._assign_categories_to_gigs()
         
         # Normalize price for better comparison
         scaler = MinMaxScaler()
         self.gigs_df['normalized_price'] = scaler.fit_transform(self.gigs_df[['price']])
         
-        print(f"Loaded {len(self.cards_df)} categories, {len(self.projects_df)} projects, and {len(self.gigs_df)} services.")
+        print(f"Loaded {len(self.cards_df)} categories, {len(self.projects_df)} projects, and {len(self.gigs_df)} gigs.")
         
     def _assign_categories_to_gigs(self):
-        """Assign category IDs to services based on their category_name"""
+        """Assign category IDs to gigs based on their descriptions"""
         categories = []
         
         for _, gig in self.gigs_df.iterrows():
+            desc_lower = gig['desc'].lower()
             assigned = False
             
-            # Check if category_name is available
-            if 'category_name' in gig and gig['category_name'] in self.category_mapping:
-                categories.append(self.category_mapping[gig['category_name']])
-                assigned = True
-            else:
-                # Try to infer from description
-                desc_lower = gig['desc'].lower()
-                for cat_title in self.category_mapping:
-                    if cat_title.lower() in desc_lower:
-                        categories.append(self.category_mapping[cat_title])
-                        assigned = True
-                        break
+            # Map gigs to categories based on keywords in description
+            for cat_title in self.category_mapping:
+                if cat_title.lower() in desc_lower:
+                    categories.append(self.category_mapping[cat_title])
+                    assigned = True
+                    break
             
-            # Assign to default category if no match found
+            # Assign to most common category if no match found
             if not assigned:
-                # Handyman is a good default for home services
-                categories.append(self.category_mapping.get('Handyman', 0))
+                # AI Art is most common based on descriptions
+                categories.append(self.category_mapping.get('AI Artists', 0))
                 
         return categories
         
-    def create_user_profile(self, user_id, name, address=None, zip_code=None, preferences=None, history=None):
+    def create_user_profile(self, user_id, name, preferences=None, history=None):
         """
         Create or update a user profile
         
         Parameters:
         - user_id: Unique identifier for the user
         - name: User's name
-        - address: User's address
-        - zip_code: User's ZIP code for location-based recommendations
-        - preferences: Dict of category preferences (e.g., {'Plumbing': 0.8, 'Electrical': 0.6})
-        - history: List of previously booked service IDs
+        - preferences: Dict of category preferences (e.g., {'AI Artists': 0.8, 'Logo Design': 0.6})
+        - history: List of previously purchased gig IDs
         """
         if user_id not in self.user_profiles:
             self.user_profiles[user_id] = {
                 'name': name,
-                'address': address,
-                'zip_code': zip_code,
                 'preferences': {},
                 'history': [],
-                'feature_vector': np.zeros(len(self.category_mapping)),
-                'urgent_need': False  # Flag for emergency service needs
+                'feature_vector': np.zeros(len(self.category_mapping))
             }
             
         # Update profile if new data provided
@@ -105,15 +95,13 @@ class ServiceRecommender:
             if category in self.category_mapping:
                 feature_vector[self.category_mapping[category]] = weight
                 
-        # Factor in booking history (with recency bias)
+        # Factor in purchase history
         if profile['history']:
-            for idx, gig_id in enumerate(profile['history']):
+            for gig_id in profile['history']:
                 try:
                     gig = self.gigs_df[self.gigs_df['id'] == gig_id].iloc[0]
                     category_id = gig['category_id']
-                    # More recent bookings have higher weight
-                    recency_weight = 0.5 * (1 + (idx / len(profile['history'])))
-                    feature_vector[category_id] += recency_weight
+                    feature_vector[category_id] += 0.5  # Increase preference based on history
                 except (IndexError, KeyError):
                     continue
                     
@@ -125,12 +113,12 @@ class ServiceRecommender:
         
     def track_interaction(self, user_id, gig_id, interaction_type='view', value=1):
         """
-        Track user interactions with services
+        Track user interactions with gigs
         
         Parameters:
         - user_id: User identifier
-        - gig_id: Service identifier
-        - interaction_type: Type of interaction ('view', 'click', 'contact', 'book')
+        - gig_id: Gig identifier
+        - interaction_type: Type of interaction ('view', 'click', 'favorite', 'purchase')
         - value: Strength of interaction (default 1)
         """
         if user_id not in self.user_interactions:
@@ -151,8 +139,8 @@ class ServiceRecommender:
                 interaction_weights = {
                     'view': 0.1,
                     'click': 0.3,
-                    'contact': 0.7,
-                    'book': 1.0
+                    'favorite': 0.7,
+                    'purchase': 1.0
                 }
                 
                 weight = interaction_weights.get(interaction_type, 0.1) * value
@@ -168,37 +156,19 @@ class ServiceRecommender:
                 
             except (IndexError, KeyError):
                 pass
-
-    def set_urgent_need(self, user_id, category=None):
-        """
-        Set a user's need for urgent/emergency service
         
-        Parameters:
-        - user_id: User identifier
-        - category: Optional category needing urgent service
+    def get_user_recommendations(self, user_id, n=5, include_history=False, price_sensitivity=0.5):
         """
-        if user_id in self.user_profiles:
-            self.user_profiles[user_id]['urgent_need'] = True
-            
-            if category and category in self.category_mapping:
-                # Boost this category preference significantly
-                self.user_profiles[user_id]['preferences'][category] = 1.0
-                self._update_user_feature_vector(user_id)
-        
-    def get_user_recommendations(self, user_id, n=5, include_history=False, price_sensitivity=0.5, location_based=True, urgent_only=False):
-        """
-        Get personalized service recommendations for a user
+        Get personalized recommendations for a user
         
         Parameters:
         - user_id: User identifier
         - n: Number of recommendations to return
-        - include_history: Whether to include previously booked services
+        - include_history: Whether to include previously purchased gigs
         - price_sensitivity: How much to factor in price (0 to 1)
-        - location_based: Whether to factor in service area
-        - urgent_only: Whether to only include services offering urgent/same-day service
         
         Returns:
-        - List of recommended service details
+        - List of recommended gig IDs
         """
         if user_id not in self.user_profiles:
             print(f"User {user_id} not found. Creating default profile.")
@@ -207,7 +177,7 @@ class ServiceRecommender:
         profile = self.user_profiles[user_id]
         feature_vector = profile['feature_vector']
         
-        # Create service feature vectors (one-hot encoding of categories)
+        # Create gig feature vectors (one-hot encoding of categories)
         gig_features = np.zeros((len(self.gigs_df), len(self.category_mapping)))
         for i, (_, gig) in enumerate(self.gigs_df.iterrows()):
             gig_features[i, gig['category_id']] = 1
@@ -215,40 +185,17 @@ class ServiceRecommender:
         # Calculate similarity scores
         similarity_scores = cosine_similarity([feature_vector], gig_features)[0]
         
-        # Filter dataset based on options
-        filtered_df = self.gigs_df.copy()
-        
-        # Filter for urgent services if requested
-        if urgent_only:
-            urgent_mask = filtered_df.get('hasUrgent', False)
-            if isinstance(urgent_mask, pd.Series) and not urgent_mask.empty:
-                filtered_df = filtered_df[urgent_mask]
-                similarity_scores = similarity_scores[urgent_mask.values]
-            
         # Adjust scores based on price sensitivity
         if price_sensitivity > 0:
-            price_factor = 1 - filtered_df['normalized_price'].values * price_sensitivity
+            price_factor = 1 - self.gigs_df['normalized_price'].values * price_sensitivity
             similarity_scores = similarity_scores * price_factor
             
         # Adjust scores based on ratings
-        similarity_scores = similarity_scores * (filtered_df['star'].values / 5.0)
-        
-        # Adjust scores based on location if requested
-        if location_based and 'zip_code' in profile and profile['zip_code']:
-            user_zip = profile['zip_code']
-            # This would be more sophisticated in a real implementation
-            # Here we just boost services that mention the user's area
-            location_boost = np.ones(len(filtered_df))
-            for i, (_, gig) in enumerate(filtered_df.iterrows()):
-                if 'serviceArea' in gig:
-                    if str(user_zip) in str(gig['serviceArea']):
-                        location_boost[i] = 1.5
-            
-            similarity_scores = similarity_scores * location_boost
+        similarity_scores = similarity_scores * (self.gigs_df['star'].values / 5.0)
         
         # Create dataframe with recommendations
         recommendations = pd.DataFrame({
-            'gig_id': filtered_df['id'].values,
+            'gig_id': self.gigs_df['id'].values,
             'score': similarity_scores
         })
         
@@ -259,24 +206,23 @@ class ServiceRecommender:
         # Sort by score and get top N
         recommendations = recommendations.sort_values('score', ascending=False).head(n)
         
-        # Get the full service details
+        # Get the full gig details
         result = []
         for _, row in recommendations.iterrows():
             gig_id = row['gig_id']
-            gig_data = filtered_df[filtered_df['id'] == gig_id].iloc[0].to_dict()
+            gig_data = self.gigs_df[self.gigs_df['id'] == gig_id].iloc[0].to_dict()
             gig_data['recommendation_score'] = row['score']
-            gig_data['explanation'] = self.explain_recommendation(user_id, gig_id)
             result.append(gig_data)
             
         return result
     
     def explain_recommendation(self, user_id, gig_id):
         """
-        Explain why a particular service was recommended
+        Explain why a particular gig was recommended
         
         Parameters:
         - user_id: User identifier
-        - gig_id: Service identifier
+        - gig_id: Gig identifier
         
         Returns:
         - Explanation text
@@ -287,7 +233,7 @@ class ServiceRecommender:
         try:
             gig = self.gigs_df[self.gigs_df['id'] == gig_id].iloc[0]
         except IndexError:
-            return "Service not found."
+            return "Gig not found."
             
         profile = self.user_profiles[user_id]
         explanations = []
@@ -297,20 +243,11 @@ class ServiceRecommender:
         category_name = next((k for k, v in self.category_mapping.items() if v == category_id), None)
         
         if category_name in profile['preferences'] and profile['preferences'][category_name] > 0.3:
-            explanations.append(f"This matches your interest in {category_name} services.")
+            explanations.append(f"This matches your interest in {category_name}.")
             
-        # Check if matches urgent need
-        if profile.get('urgent_need', False) and gig.get('hasUrgent', False):
-            explanations.append("This provider offers same-day emergency service.")
-            
-        # Check if covers user's location
-        if 'zip_code' in profile and profile['zip_code'] and 'serviceArea' in gig:
-            if str(profile['zip_code']) in str(gig['serviceArea']):
-                explanations.append("This provider serves your area.")
-            
-        # Check if similar to booking history
+        # Check if similar to purchase history
         if gig_id in profile['history']:
-            explanations.append("You've used this service before.")
+            explanations.append("You've purchased this service before.")
         else:
             similar_gigs = []
             for hist_gig_id in profile['history']:
@@ -322,7 +259,7 @@ class ServiceRecommender:
                     continue
                     
             if similar_gigs:
-                explanations.append(f"This is similar to services you've booked before.")
+                explanations.append(f"This is similar to services you've purchased before.")
                 
         # Check rating and price
         if gig['star'] >= 4.5:
@@ -340,112 +277,30 @@ class ServiceRecommender:
             
         return " ".join(explanations)
 
-    def get_emergency_services(self, user_id=None, category=None, n=5):
-        """
-        Get services that offer urgent/same-day service
+    def get_trending_gigs(self, n=5):
+        """Get trending gigs based on interaction data"""
+        # In a real system, this would use actual trending data
+        # Here we'll simulate it with ratings and a random factor
         
-        Parameters:
-        - user_id: Optional user ID to personalize results
-        - category: Optional category to filter by
-        - n: Number of results to return
+        trending_score = self.gigs_df['star'] * np.random.uniform(0.8, 1.2, len(self.gigs_df))
         
-        Returns:
-        - List of emergency service details
-        """
-        # Filter for services with hasUrgent flag
-        urgent_services = self.gigs_df[self.gigs_df.get('hasUrgent', False) == True]
+        # Create dataframe with trending scores
+        trending = pd.DataFrame({
+            'gig_id': self.gigs_df['id'].values,
+            'score': trending_score
+        })
         
-        # Filter by category if specified
-        if category and category in self.category_mapping:
-            category_id = self.category_mapping[category]
-            urgent_services = urgent_services[urgent_services['category_id'] == category_id]
+        # Sort by score and get top N
+        trending = trending.sort_values('score', ascending=False).head(n)
+        
+        # Get the full gig details
+        result = []
+        for _, row in trending.iterrows():
+            gig_id = row['gig_id']
+            gig_data = self.gigs_df[self.gigs_df['id'] == gig_id].iloc[0].to_dict()
+            result.append(gig_data)
             
-        # If user_id is provided, use their location and preferences
-        if user_id in self.user_profiles:
-            profile = self.user_profiles[user_id]
-            
-            # Filter by user location if available
-            if 'zip_code' in profile and profile['zip_code']:
-                user_zip = profile['zip_code']
-                # This would be more sophisticated in a real implementation
-                # Here we just boost services that mention the user's area
-                location_scores = np.ones(len(urgent_services))
-                for i, (_, gig) in enumerate(urgent_services.iterrows()):
-                    if 'serviceArea' in gig:
-                        if str(user_zip) in str(gig['serviceArea']):
-                            location_scores[i] = 2.0  # Higher priority for local services
-                
-                # Sort by location score and rating
-                urgent_services['location_score'] = location_scores
-                urgent_services = urgent_services.sort_values(['location_score', 'star'], ascending=[False, False])
-            else:
-                # Just sort by rating if no location
-                urgent_services = urgent_services.sort_values('star', ascending=False)
-        else:
-            # Sort by rating if no user
-            urgent_services = urgent_services.sort_values('star', ascending=False)
-            
-        # Return top N results
-        return urgent_services.head(n).to_dict('records')
-    
-    def get_seasonal_recommendations(self, season, user_id=None, n=5):
-        """
-        Get seasonal service recommendations
-        
-        Parameters:
-        - season: Season ('winter', 'spring', 'summer', 'fall')
-        - user_id: Optional user ID to personalize results
-        - n: Number of results to return
-        
-        Returns:
-        - List of seasonal service recommendations
-        """
-        # Map seasons to service categories
-        season_categories = {
-            'winter': ['HVAC', 'Plumbing', 'Insulation'],
-            'spring': ['Landscaping', 'Cleaning', 'Painting'],
-            'summer': ['HVAC', 'Landscaping', 'Roofing'],
-            'fall': ['HVAC', 'Landscaping', 'Roofing', 'Plumbing']
-        }
-        
-        relevant_categories = season_categories.get(season.lower(), [])
-        category_ids = [self.category_mapping.get(cat, -1) for cat in relevant_categories]
-        category_ids = [cat_id for cat_id in category_ids if cat_id >= 0]
-        
-        # Filter services by seasonal categories
-        if category_ids:
-            seasonal_services = self.gigs_df[self.gigs_df['category_id'].isin(category_ids)]
-        else:
-            # If no valid categories, return empty list
-            return []
-            
-        # If user_id is provided, personalize recommendations
-        if user_id in self.user_profiles:
-            # Get user recommendations within seasonal categories
-            recs = self.get_user_recommendations(
-                user_id=user_id, 
-                n=n,
-                location_based=True
-            )
-            
-            # Filter to keep only seasonal categories
-            seasonal_recs = [rec for rec in recs if rec['category_id'] in category_ids]
-            
-            # If we don't have enough, add top-rated seasonal services
-            if len(seasonal_recs) < n:
-                # Get IDs of services we already have
-                existing_ids = [rec['id'] for rec in seasonal_recs]
-                
-                # Get additional seasonal services not already included
-                additional = seasonal_services[~seasonal_services['id'].isin(existing_ids)]
-                additional = additional.sort_values('star', ascending=False).head(n - len(seasonal_recs))
-                
-                seasonal_recs.extend(additional.to_dict('records'))
-                
-            return seasonal_recs
-        else:
-            # No user - return top-rated seasonal services
-            return seasonal_services.sort_values('star', ascending=False).head(n).to_dict('records')
+        return result
     
     def save_model(self, filename='recommender_model.json'):
         """Save the model data to a JSON file"""
@@ -477,82 +332,111 @@ class ServiceRecommender:
             return False
 
 # Example usage
+def load_from_js_exports(js_file_path):
+    """
+    Parse JavaScript export statements to extract data
+    Note: This is a simplified approach and may need adjustments 
+    for different JS file formats
+    """
+    with open(js_file_path, 'r') as f:
+        js_content = f.read()
+    
+    # Extract the data arrays (very simplified approach)
+    # In a real system, use a proper JS parser
+    data = {}
+    
+    # Extract cards array
+    cards_start = js_content.find('export const cards = [')
+    if cards_start != -1:
+        cards_end = js_content.find('];', cards_start)
+        cards_js = js_content[cards_start:cards_end+1].replace('export const cards = ', '')
+        # Convert JS to valid JSON
+        cards_json = cards_js.replace
+        cards_json = cards_json.replace
+        data['cards'] = json.loads(cards_json)
+    
+    # Extract projects array
+    projects_start = js_content.find('export const projects = [')
+    if projects_start != -1:
+        projects_end = js_content.find('];', projects_start)
+        projects_js = js_content[projects_start:projects_end+1].replace('export const projects = ', '')
+        # Convert JS to valid JSON
+        projects_json = projects_js.replace
+        projects_json = projects_json.replace
+        data['projects'] = json.loads(projects_json)
+    
+    # Extract gigs array
+    gigs_start = js_content.find('export const gigs = [')
+    if gigs_start != -1:
+        gigs_end = js_content.find('];', gigs_start)
+        gigs_js = js_content[gigs_start:gigs_end+1].replace('export const gigs = ', '')
+        # Convert JS to valid JSON
+        gigs_json = gigs_js.replace
+        gigs_json = gigs_json.replace
+        data['gigs'] = json.loads(gigs_json)
+    
+    return data
+
+# Example of how to use the recommendation system
 if __name__ == "__main__":
-    # Sample data for a home service platform
+    # Option 1: Load data directly
     cards_data = [
-        {"id": 1, "title": "Plumbing", "desc": "Fix leaks and installations"},
-        {"id": 2, "title": "Electrical", "desc": "Professional electrical work"},
-        {"id": 3, "title": "Cleaning", "desc": "Make your home shine"},
-        {"id": 4, "title": "HVAC", "desc": "Heating and cooling solutions"},
-        {"id": 5, "title": "Landscaping", "desc": "Beautiful outdoor spaces"},
-        {"id": 6, "title": "Handyman", "desc": "General home repairs"}
+        {"id": 1, "title": "AI Artists", "desc": "Add talent to AI"},
+        {"id": 2, "title": "Logo Design", "desc": "Build yor brand"},
+        # Add more card data here
     ]
     
     projects_data = [
-        {"id": 1, "cat": "Plumbing", "username": "Mike's Plumbing"},
-        {"id": 2, "cat": "Electrical", "username": "ElectriCare"},
-        {"id": 3, "cat": "Cleaning", "username": "CleanTeam Pro"},
-        {"id": 4, "cat": "HVAC", "username": "Cool Air Systems"}
+        {"id": 1, "cat": "Web and Mobile Design", "username": "Anna Bell"},
+        {"id": 2, "cat": "Logo Design", "username": "Morton Green"},
+        # Add more project data here
     ]
     
     gigs_data = [
-        {"id": 1, "desc": "Professional plumbing service for leaks and repairs", "price": 85, "star": 5, "username": "Mike's Plumbing", "category_name": "Plumbing", "hasUrgent": True, "serviceArea": "Chicago, 20 mile radius"},
-        {"id": 2, "desc": "Licensed electrician for all residential work", "price": 95, "star": 5, "username": "ElectriCare", "category_name": "Electrical", "hasUrgent": False, "serviceArea": "Chicago, 15 mile radius"},
-        {"id": 3, "desc": "Deep house cleaning - kitchen, bathrooms, floors", "price": 120, "star": 4, "username": "CleanTeam Pro", "category_name": "Cleaning", "hasUrgent": True, "serviceArea": "Chicago, 25 mile radius"},
-        {"id": 4, "desc": "AC installation and repair - all brands serviced", "price": 110, "star": 4, "username": "Cool Air Systems", "category_name": "HVAC", "hasUrgent": True, "serviceArea": "Chicago, 30 mile radius"}
+        {"id": 1, "desc": "I will create ai art character from your images and prompts", "price": 59, "star": 5, "username": "Anna Bell"},
+        {"id": 2, "desc": "I will create ultra high quality character art with ai", "price": 79, "star": 5, "username": "Lannie Coleman"},
+        # Add more gig data here
     ]
     
     # Initialize recommender
     recommender = ServiceRecommender()
+    
+    # Option 1: Load data directly
     recommender.load_data(cards_data, projects_data, gigs_data)
+    
+    # Option 2: Load from JavaScript file
+    # data = load_from_js_exports('data.js')
+    # recommender.load_data(data['cards'], data['projects'], data['gigs'])
     
     # Create a user profile
     user_id = "user123"
     recommender.create_user_profile(
         user_id=user_id,
         name="John Doe",
-        address="123 Main St",
-        zip_code="60601",  # Chicago
         preferences={
-            "Plumbing": 0.8,
-            "HVAC": 0.4,
-            "Electrical": 0.6
+            "AI Artists": 0.8,
+            "Logo Design": 0.4,
+            "Illustration": 0.6
         },
-        history=[3]  # Previously booked service IDs
+        history=[3, 7]  # Previously purchased gig IDs
     )
     
     # Track some user interactions
     recommender.track_interaction(user_id, 1, 'view')
     recommender.track_interaction(user_id, 2, 'click')
-    recommender.track_interaction(user_id, 4, 'contact')
+    recommender.track_interaction(user_id, 5, 'favorite')
     
     # Get recommendations
     recommendations = recommender.get_user_recommendations(
         user_id=user_id,
         n=3,
-        price_sensitivity=0.3,
-        location_based=True
+        price_sensitivity=0.3
     )
     
     print("\nRecommendations for", user_id)
     for gig in recommendations:
         print(f"{gig['id']} - {gig['desc']} (${gig['price']}) - Score: {gig['recommendation_score']:.2f}")
         print(recommender.explain_recommendation(user_id, gig['id']))
-        print()
-    
-    # Get emergency services
-    print("\nEmergency Services Available:")
-    emergency_services = recommender.get_emergency_services(user_id=user_id)
-    for service in emergency_services:
-        print(f"{service['id']} - {service['desc']} (${service['price']}) - {service['username']}")
-        print(f"Service Area: {service['serviceArea']}")
-        print()
-    
-    # Get seasonal recommendations
-    print("\nSeasonal Recommendations (Summer):")
-    seasonal_recs = recommender.get_seasonal_recommendations('summer', user_id=user_id)
-    for service in seasonal_recs:
-        print(f"{service['id']} - {service['desc']} (${service['price']}) - {service['username']}")
         print()
     
     # Save the model for future use
