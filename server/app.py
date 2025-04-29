@@ -14,15 +14,18 @@ load_dotenv()
 # Create mock data for testing
 mock_data = {
     "cards": [
-        {"id": 1, "title": "AI Artists", "desc": "Add talent to AI"},
-        {"id": 2, "title": "Logo Design", "desc": "Build your brand"},
-        {"id": 3, "title": "WordPress", "desc": "Customize your site"}
+        {"id": 1, "title": "Plumbing", "desc": "Fix leaks and installations"},
+        {"id": 2, "title": "Electrical", "desc": "Professional electrical work"},
+        {"id": 3, "title": "Cleaning", "desc": "Make your home shine"},
+        {"id": 4, "title": "HVAC", "desc": "Heating and cooling solutions"},
+        {"id": 5, "title": "Landscaping", "desc": "Beautiful outdoor spaces"},
+        {"id": 6, "title": "Handyman", "desc": "General home repairs"}
     ],
     "gigs": [
-        {"id": 1, "desc": "I will create ai art character from your images and prompts", "price": 59, "star": 5, "username": "Anna Bell", "category_name": "AI Artists"},
-        {"id": 2, "desc": "I will create ultra high quality character art with ai", "price": 79, "star": 5, "username": "Lannie Coleman", "category_name": "AI Artists"},
-        {"id": 3, "desc": "I will create custom ai generated artwork using your photos", "price": 99, "star": 4, "username": "Don Weber", "category_name": "AI Artists"},
-        {"id": 4, "desc": "I will create custom art using midjourney generator", "price": 110, "star": 4, "username": "Wilton Hunt", "category_name": "AI Artists"}
+        {"id": 1, "desc": "Professional plumbing service for leaks and repairs", "price": 85, "star": 5, "username": "Mike's Plumbing", "category_name": "Plumbing", "hasUrgent": True, "serviceArea": "Chicago, 20 mile radius"},
+        {"id": 2, "desc": "Licensed electrician for all residential work", "price": 95, "star": 5, "username": "ElectriCare", "category_name": "Electrical", "hasUrgent": False, "serviceArea": "Chicago, 15 mile radius"},
+        {"id": 3, "desc": "Deep house cleaning - kitchen, bathrooms, floors", "price": 120, "star": 4, "username": "CleanTeam Pro", "category_name": "Cleaning", "hasUrgent": True, "serviceArea": "Chicago, 25 mile radius"},
+        {"id": 4, "desc": "AC installation and repair - all brands serviced", "price": 110, "star": 4, "username": "Cool Air Systems", "category_name": "HVAC", "hasUrgent": True, "serviceArea": "Chicago, 30 mile radius"}
     ]
 }
 
@@ -60,6 +63,7 @@ def get_recommendations(user_id):
     recommendations = []
     for gig in mock_data["gigs"]:
         gig_copy = gig.copy()
+<<<<<<< HEAD
         
         # Randomize price slightly to simulate different recommendations
         price_variation = random.uniform(0.85, 1.15)  # 15% variation
@@ -72,6 +76,9 @@ def get_recommendations(user_id):
         if random.random() < 0.3:  # 30% chance
             gig_copy["badge"] = random.choice(["New", "Trending", "Best Match"])
             
+=======
+        gig_copy["explanation"] = "This service is available in your area."
+>>>>>>> 44fa55c4ae343b5f3f3d9d79bb335839abc200de
         recommendations.append(gig_copy)
     
     # Shuffle recommendations to simulate different results each time
@@ -94,6 +101,10 @@ def create_user_profile():
     user_id = data['user_id']
     user_profiles[user_id] = {
         "name": data.get('name', f"User {user_id}"),
+        "address": data.get('address', ""),
+        "city": data.get('city', ""),
+        "state": data.get('state', ""),
+        "zip": data.get('zip', ""),
         "preferences": data.get('preferences', {}),
         "history": data.get('history', [])
     }
@@ -105,7 +116,7 @@ def create_user_profile():
 
 @app.route('/api/track_interaction', methods=['POST'])
 def track_interaction():
-    """Track a user interaction with a gig"""
+    """Track a user interaction with a service"""
     data = request.get_json()
     print(f"Interaction tracking request: {data}")
     
@@ -114,7 +125,48 @@ def track_interaction():
     
     return jsonify({
         "status": "success",
-        "message": f"Interaction recorded for user {data['user_id']} with gig {data['gig_id']}"
+        "message": f"Interaction recorded for user {data['user_id']} with service {data['gig_id']}"
+    })
+
+@app.route('/api/service_providers', methods=['GET'])
+def get_service_providers():
+    """Get list of service providers based on category and location"""
+    category = request.args.get('category', '')
+    zip_code = request.args.get('zip', '')
+    
+    filtered_providers = mock_data["gigs"]
+    
+    if category:
+        filtered_providers = [p for p in filtered_providers if p["category_name"].lower() == category.lower()]
+    
+    return jsonify({
+        "status": "success",
+        "providers": filtered_providers
+    })
+
+@app.route('/api/emergency_services', methods=['GET'])
+def get_emergency_services():
+    """Get services available for same-day emergency work"""
+    
+    emergency_providers = [p for p in mock_data["gigs"] if p.get("hasUrgent", False)]
+    
+    return jsonify({
+        "status": "success",
+        "emergency_providers": emergency_providers
+    })
+
+@app.route('/api/book_service', methods=['POST'])
+def book_service():
+    """Book a service appointment"""
+    data = request.get_json()
+    
+    if not data or 'user_id' not in data or 'gig_id' not in data or 'date' not in data:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    return jsonify({
+        "status": "success",
+        "booking_id": "BK" + str(hash(data['user_id'] + data['gig_id'] + data['date']))[:8],
+        "message": "Service booked successfully"
     })
 
 # Add a test route that returns all available endpoints
@@ -139,6 +191,9 @@ if __name__ == "__main__":
     print("Available endpoints:")
     print(f" - Health check: http://localhost:{port}/api/health")
     print(f" - Recommendations: http://localhost:{port}/api/recommendations/<user_id>")
+    print(f" - Service providers: http://localhost:{port}/api/service_providers")
+    print(f" - Emergency services: http://localhost:{port}/api/emergency_services")
+    print(f" - Book service: http://localhost:{port}/api/book_service")
     print(f" - List routes: http://localhost:{port}/api/routes")
     
     app.run(debug=True, host='127.0.0.1', port=port)
