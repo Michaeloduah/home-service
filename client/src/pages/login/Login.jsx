@@ -41,10 +41,13 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button type="submit">Login</button>
-          {error && error}
+          {error && <div className="error-message">{error}</div>}
+          <div className="forgot-password">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </div>
         </form>
         <div className="signup">
-          <span>New to Fiverr?</span>
+          <span>New to HomeServe?</span>
           <Link
             style={{
               marginLeft: "5px",

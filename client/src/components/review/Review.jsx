@@ -12,8 +12,8 @@ const Review = ({ review }) => {
         />
         <div className="info">
           <span>{review.user.username}</span>
-          <div className="country">
-            <span>{review.user.country}</span>
+          <div className="location">
+            <span>{review.user.city || review.user.country}</span>
           </div>
         </div>
       </div>
@@ -26,6 +26,11 @@ const Review = ({ review }) => {
         <span>{review.star}</span>
       </div>
       <p>{review.desc}</p>
+      {review.serviceDate && (
+        <div className="service-info">
+          <span>Service completed: {review.serviceDate}</span>
+        </div>
+      )}
       <div className="helpful">
         <span>Helpful?</span>
         <img src="/img/like.png" alt="" />

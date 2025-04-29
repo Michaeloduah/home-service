@@ -34,24 +34,48 @@ const Reviews = () => {
     e.target[1].selectedIndex = 0;
   };
 
+  // Calculate average rating
+  const averageRating = data && data.length > 0 
+    ? (data.reduce((sum, review) => sum + review.star, 0) / data.length).toFixed(1) 
+    : 0;
+
   return (
     <div className="reviews">
       {data && data.length > 0 ? (
-        data.map((review) => <Review key={review._id} review={review} />)
+        <>
+          <div className="rating-summary">
+            <h3>Service Rating</h3>
+            <div className="rating-average">
+              <span className="rating-number">{averageRating}</span>
+              <div className="stars">
+                {Array(Math.round(averageRating))
+                  .fill()
+                  .map((_, id) => (
+                    <img src="/img/star.png" alt="" key={id} />
+                  ))}
+              </div>
+              <span className="rating-count">({data.length} reviews)</span>
+            </div>
+          </div>
+          {data.map((review) => <Review key={review._id} review={review} />)}
+        </>
       ) : (
-        <h3 style={{marginBottom:"40px"}}>No reviews</h3>
+        <h3 style={{marginBottom:"40px"}}>No reviews yet</h3>
       )}
       <div className="add">
+        <h3>Write a Review</h3>
         <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Write review..." />
-          <select>
-            <option value="5">5 stars</option>
-            <option value="4">4 stars</option>
-            <option value="3">3 stars</option>
-            <option value="2">2 stars</option>
-            <option value="1">1 star</option>
-          </select>
-          <button>Submit</button>
+          <textarea placeholder="Share your experience with this service..." rows="3"></textarea>
+          <div className="form-bottom">
+            <select>
+              <option value="5">5 stars - Excellent</option>
+              <option value="4">4 stars - Good</option>
+              <option value="3">3 stars - Average</option>
+              <option value="2">2 stars - Poor</option>
+              <option value="1">1 star - Terrible</option>
+            </select>
+            <button>Submit Review</button>
+          </div>
         </form>
       </div>
     </div>

@@ -8,16 +8,16 @@ const Footer = () => {
         <div className="top">
           <div className="item">
             <h2>Categories</h2>
-            <span>Graphics & Design</span>
-            <span>Digital Marketing</span>
-            <span>Writing & Translation</span>
-            <span>Video & Animation</span>
-            <span>Music & Audio</span>
-            <span>Programming & Tech</span>
-            <span>Data</span>
-            <span>Business</span>
-            <span>Lifestyle</span>
-            <span>Photography</span>
+            <span>Plumbing</span>
+            <span>Electrical</span>
+            <span>HVAC</span>
+            <span>Cleaning</span>
+            <span>Landscaping</span>
+            <span>Handyman</span>
+            <span>Painting</span>
+            <span>Roofing</span>
+            <span>Moving</span>
+            <span>Renovation</span>
             <span>Sitemap</span>
           </div>
           <div className="item">
@@ -34,8 +34,8 @@ const Footer = () => {
             <h2>Support</h2>
             <span>Help & Support</span>
             <span>Trust & Safety</span>
-            <span>Selling on Liverr</span>
-            <span>Buying on Liverr</span>
+            <span>Becoming a Provider</span>
+            <span>Hiring Service Providers</span>
           </div>
           <div className="item">
             <h2>Community</h2>
@@ -44,32 +44,32 @@ const Footer = () => {
             <span>Forum</span>
             <span>Events</span>
             <span>Blog</span>
-            <span>Influencers</span>
+            <span>Partner Professionals</span>
             <span>Affiliates</span>
             <span>Podcast</span>
             <span>Invite a Friend</span>
-            <span>Become a Seller</span>
+            <span>Become a Provider</span>
             <span>Community Standards</span>
           </div>
           <div className="item">
-            <h2>More From Fiverr</h2>
-            <span>Liverr Business</span>
-            <span>Liverr Pro</span>
-            <span>Liverr Logo Maker</span>
-            <span>Liverr Guides</span>
-            <span>Get Inspired</span>
-            <span>Liverr Select</span>
-            <span>ClearVoice</span>
-            <span>Liverr Workspace</span>
-            <span>Learn</span>
-            <span>Working Not Working</span>
+            <h2>More From HomeServe</h2>
+            <span>HomeServe Premium</span>
+            <span>HomeServe Pro</span>
+            <span>HomeServe Emergency</span>
+            <span>HomeServe Guides</span>
+            <span>Home Improvement Tips</span>
+            <span>HomeServe Select</span>
+            <span>HomeServe Insurance</span>
+            <span>HomeServe Workspace</span>
+            <span>DIY Learning</span>
+            <span>Seasonal Maintenance</span>
           </div>
         </div>
         <hr />
         <div className="bottom">
           <div className="left">
-            <h2>liverr</h2>
-            <span>© Liverr International Ltd. 2023</span>
+            <h2>HomeServe</h2>
+            <span>© HomeServe International Ltd. 2023</span>
           </div>
           <div className="right">
             <div className="social">

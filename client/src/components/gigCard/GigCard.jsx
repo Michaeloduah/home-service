@@ -11,6 +11,7 @@ const GigCard = ({ item }) => {
           <div className="user">
             <img src={item.userId.img || "./img/noavatar.png"} alt="" />
             <span>{item.userId.username}</span>
+            {item.userId.verified && <span className="verified-badge">✓</span>}
           </div>
           <p>{item.shortDesc}</p>
           <div className="star">
@@ -20,13 +21,15 @@ const GigCard = ({ item }) => {
         </div>
         <hr />
         <div className="details">
-          <img src="./img/heart.png" alt="" />
           <div className="price">
             <span>STARTING AT</span>
             <h2>
               $ {item.price}
-              <sup>99</sup>
+              {item.hourlyRate && <span className="rate-type">/hr</span>}
             </h2>
+          </div>
+          <div className="availability">
+            {item.hasUrgent && <span className="urgent">Available Today</span>}
           </div>
         </div>
       </div>

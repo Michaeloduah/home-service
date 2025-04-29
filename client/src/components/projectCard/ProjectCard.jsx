@@ -12,6 +12,7 @@ const ProjectCard = ({ item }) => {
           <div className="texts">
             <h2>{item.cat}</h2>
             <span>{item.username}</span>
+            {item.completedDate && <span className="completed">Completed: {item.completedDate}</span>}
           </div>
         </div>
       </div>

@@ -1,94 +1,78 @@
 import React from "react";
-import "./Features.scss";
+import "./Footer.scss";
 
-const Features = () => {
+function Footer() {
   return (
-    <>
-      <div className="features">
-        <div className="container">
+    <div className="footer">
+      <div className="container">
+        <div className="top">
           <div className="item">
-            <h1>A whole world of freelance talent at your fingertip</h1>
-            <div className="title">
-              <img src="./img/check.png" />
-              The best for every budget
-            </div>
-            <p>
-              Find high-quality services at every price point. No hourly rates,
-              just projcet-baesd pricing.
-            </p>
-            <div className="title">
-              <img src="./img/check.png" />
-              The best for every budget
-            </div>
-            <p>
-              Find high-quality services at every price point. No hourly rates,
-              just projcet-baesd pricing.
-            </p>
-            <div className="title">
-              <img src="./img/check.png" />
-              The best for every budget
-            </div>
-            <p>
-              Find high-quality services at every price point. No hourly rates,
-              just projcet-baesd pricing.
-            </p>
-            <div className="title">
-              <img src="./img/check.png" />
-              The best for every budget
-            </div>
-            <p>
-              Find high-quality services at every price point. No hourly rates,
-              just projcet-baesd pricing.
-            </p>
+            <h2>Categories</h2>
+            <span>Plumbing</span>
+            <span>Electrical</span>
+            <span>Cleaning</span>
+            <span>Landscaping</span>
+            <span>Handyman</span>
+            <span>HVAC</span>
+            <span>Painting</span>
+            <span>Moving</span>
           </div>
           <div className="item">
-            <video
-              src="https://fiverr-res.cloudinary.com/video/upload/t_fiverr_hd/vmvv3czyk2ifedefkau7"
-              controls
-            >
-              Your browser does not support the video tag.
-            </video>
+            <h2>About</h2>
+            <span>Press & News</span>
+            <span>Partnerships</span>
+            <span>Privacy Policy</span>
+            <span>Terms of Service</span>
+            <span>Intellectual Property Claims</span>
+            <span>Investor Relations</span>
+          </div>
+          <div className="item">
+            <h2>Support</h2>
+            <span>Help & Support</span>
+            <span>Trust & Safety</span>
+            <span>Provider Success</span>
+            <span>Service Guarantee</span>
+            <span>Community Standards</span>
+          </div>
+          <div className="item">
+            <h2>Community</h2>
+            <span>Customer Stories</span>
+            <span>Provider Spotlight</span>
+            <span>Invite a Friend</span>
+            <span>Become a Provider</span>
+            <span>Community Forum</span>
+            <span>Events</span>
+            <span>Blog</span>
+          </div>
+        </div>
+        <hr />
+        <div className="bottom">
+          <div className="left">
+            <h2>HomeServe</h2>
+            <span>© HomeServe International Ltd. 2023</span>
+          </div>
+          <div className="right">
+            <div className="social">
+              <img src="/img/twitter.png" alt="" />
+              <img src="/img/facebook.png" alt="" />
+              <img src="/img/linkedin.png" alt="" />
+              <img src="/img/pinterest.png" alt="" />
+              <img src="/img/instagram.png" alt="" />
+            </div>
+            <div className="link">
+              <img src="/img/language.png" alt="" />
+              <span>English</span>
+            </div>
+            <div className="link">
+              <img src="/img/coin.png" alt="" />
+              <span>USD</span>
+            </div>
+            <img src="/img/accessibility.png" alt="" />
           </div>
         </div>
       </div>
-      <div className="features bg-blue">
-        <div className="container">
-          <div className="item">
-            <h2>fiverr business.</h2>
-            <h1>
-              A solution built for <span className="italic">business</span>
-            </h1>
-            <p>
-              Upgrade to a curated experience to access vetted talent and
-              exclusive tools
-            </p>
-            <div className="title">
-              <img src="./img/check.png" />
-              Talent matching
-            </div>
-            <div className="title">
-              <img src="./img/check.png" />
-              Dedicated account management
-            </div>
-            <div className="title">
-              <img src="./img/check.png" />
-              Team collaboration tools
-            </div>
-            <div className="title">
-              <img src="./img/check.png" />
-              Business payment solutions
-            </div>
-            <div className="button-container">
-              <button>Explore Fiverr Business</button>
-            </div>
-          </div>
-          <div className="item">
-            <img src="https://fiverr-res.cloudinary.com/q_auto,f_auto,w_870,dpr_1.0/v1/attachments/generic_asset/asset/d9c17ceebda44764b591a8074a898e63-1599597624757/business-desktop-870-x1.png" />
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
-};
+}
 
-export default Features;
+export default Footer;

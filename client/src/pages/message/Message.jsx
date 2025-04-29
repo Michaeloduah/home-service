@@ -39,9 +39,13 @@ const Message = () => {
       <div className="container">
         <span className="breadcrumbs">
           <Link to="/messages" className="link">
-            MESSAGES
+            CONVERSATIONS
           </Link>
-          &gt; {id}
+          &gt; {data && data[0] ? 
+              (data[0].senderId._id === currentUser._id ? 
+                data[0].receiverId.username : 
+                data[0].senderId.username) : 
+              "New Conversation"}
         </span>
         <div className="messages">
           {data && data.length > 0 ? (
@@ -61,17 +65,23 @@ const Message = () => {
                   alt=""
                 />
                 <p>{msg.desc}</p>
+                <span className="time">
+                  {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
               </div>
             ))
           ) : (
-            <div style={{ textAlign: "center" }}>No messages</div>
+            <div className="no-messages">
+              <p>No messages yet. Start the conversation!</p>
+              <p className="tip">Discuss service details, scheduling, or ask questions about the service.</p>
+            </div>
           )}
         </div>
         <hr />
         <form className="write" onSubmit={handleSubmit}>
           <textarea
             name=""
-            placeholder="write a message..."
+            placeholder="Type your message here..."
             id=""
             cols="30"
             rows="10"

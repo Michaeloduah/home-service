@@ -25,7 +25,7 @@ const Gig = () => {
           <div className="left">
             <span className="breadcrumbs">
               <Link to="/gigs" className="link">
-                Fiverr
+                HomeServe
               </Link>
               &gt; {data.cat} &gt;
             </span>
@@ -59,10 +59,10 @@ const Gig = () => {
                 <img src={i} alt="" key={id} />
               ))}
             </Slider>
-            <h2>About This Gig</h2>
+            <h2>About This Service</h2>
             <p>{data.description}</p>
             <div className="seller">
-              <h2>About The Seller</h2>
+              <h2>About The Service Provider</h2>
               <div className="user">
                 <img
                   src={data.userId.img ? data.userId.img : "/img/noavatar.png"}
@@ -93,11 +93,11 @@ const Gig = () => {
               <div className="box">
                 <div className="items">
                   <div className="item">
-                    <span className="title">From</span>
-                    <span className="desc">{data.userId.country}</span>
+                    <span className="title">Service Area</span>
+                    <span className="desc">{data.serviceArea || data.userId.country}</span>
                   </div>
                   <div className="item">
-                    <span className="title">Member since</span>
+                    <span className="title">Provider since</span>
                     <span className="desc">
                       {new Date(data.userId.createdAt).toLocaleString("en-US", {
                         month: "long",
@@ -110,16 +110,24 @@ const Gig = () => {
                     <span className="desc">4 hours</span>
                   </div>
                   <div className="item">
-                    <span className="title">Last delivery</span>
+                    <span className="title">Last service</span>
                     <span className="desc">1 day</span>
                   </div>
-                  <div className="item">
-                    <span className="title">Languages</span>
-                    <span className="desc">English</span>
-                  </div>
+                  {data.userId.certifications && (
+                    <div className="item">
+                      <span className="title">Certifications</span>
+                      <span className="desc">{data.userId.certifications}</span>
+                    </div>
+                  )}
                 </div>
                 <hr />
                 <p>{data.userId.description || "No description provided"}</p>
+                {data.userId.insurance && (
+                  <div className="insurance">
+                    <img src="/img/shield.png" alt="Insurance" />
+                    <span>Insured & Bonded</span>
+                  </div>
+                )}
               </div>
             </div>
             <Reviews data={data} />
@@ -128,17 +136,22 @@ const Gig = () => {
             <div className="price">
               <h3>{data.shortTitle}</h3>
               <h2>${data.price}</h2>
+              {data.hourlyRate && (
+                <span className="hourly-rate">+ ${data.hourlyRate}/hour if needed</span>
+              )}
             </div>
             <p>{data.shortDesc}</p>
             <div className="details">
               <div className="item">
                 <img src="/img/clock.png" alt="" />
-                <span>2 Days Delivery</span>
+                <span>{data.deliveryTime} Hours Estimated Time</span>
               </div>
-              <div className="item">
-                <img src="/img/recycle.png" alt="" />
-                <span>{data.revisionNumber} Revisions</span>
-              </div>
+              {data.hasUrgent && (
+                <div className="item urgent">
+                  <img src="/img/urgent.png" alt="" />
+                  <span>Same-day Service Available</span>
+                </div>
+              )}
             </div>
             <div className="features">
               {data.features.map((feature, key) => (
@@ -149,7 +162,7 @@ const Gig = () => {
               ))}
             </div>
             <Link className="link" to={`/pay/${data._id}`}>
-              <button>Continue</button>
+              <button>Book Now</button>
             </Link>
           </div>
         </div>

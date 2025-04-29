@@ -13,6 +13,8 @@ const MyGigs = () => {
     onSuccess: () => queryClient.invalidateQueries("myGigs"),
   });
 
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  
   const { data, isLoading, isError } = useQuery({
     queryKey: ["myGigs"],
     queryFn: () =>
@@ -20,32 +22,34 @@ const MyGigs = () => {
         .get(`/gigs?userId=${currentUser._id}`)
         .then((res) => res.data.data),
   });
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
 
   const handleDelete = (id) => {
-    mutation.mutate(id);
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      mutation.mutate(id);
+    }
   };
 
   return (
     <div className="my-gigs">
       <div className="container">
         <div className="title">
-          <h1>Gigs</h1>
+          <h1>My Services</h1>
           <Link to="/add">
-            <button>Add new Gig</button>
+            <button>Add New Service</button>
           </Link>
         </div>
         <table>
           <tbody>
             <tr>
               <th>Image</th>
-              <th>Title</th>
+              <th>Service Title</th>
               <th>Price</th>
-              <th>Sales</th>
-              <th>Action</th>
+              <th>Bookings</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
             {data && data.length ? (
               data.map((gig) => (
@@ -55,22 +59,36 @@ const MyGigs = () => {
                   </td>
                   <td>{gig.title}</td>
                   <td>
-                    {gig.price}
-                    <sup>99</sup>
+                    ${gig.price}
+                    {gig.hourlyRate && <span className="hourly-note">+${gig.hourlyRate}/hr</span>}
                   </td>
-                  <td>{gig.sales}</td>
+                  <td>{gig.sales || 0}</td>
                   <td>
+                    <span className={`status ${gig.isActive ? 'active' : 'inactive'}`}>
+                      {gig.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="actions">
+                    <Link to={`/edit/${gig._id}`}>
+                      <img className="edit" src="./img/edit.png" alt="Edit" title="Edit Service" />
+                    </Link>
                     <img
                       className="delete"
                       src="./img/delete.png"
-                      alt=""
+                      alt="Delete"
+                      title="Delete Service"
                       onClick={() => handleDelete(gig._id)}
                     />
                   </td>
                 </tr>
               ))
             ) : (
-              <div>No gigs</div>
+              <tr>
+                <td colSpan="6" className="no-services">
+                  <div>You haven't created any services yet</div>
+                  <p>Add services to start receiving bookings from customers in your area</p>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

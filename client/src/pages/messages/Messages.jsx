@@ -27,23 +27,21 @@ const Messages = () => {
     mutation.mutate({ id });
   };
 
-  const msg =
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus, sapiente.";
   return (
     <div className="messages">
       <div className="container">
         <div className="title">
-          <h1>Orders</h1>
+          <h1>Messages</h1>
         </div>
         <table>
           <tbody>
             <tr>
-              <th>{currentUser.isSeller ? "Buyer" : "Seller"}</th>
+              <th>{currentUser.isSeller ? "Customer" : "Service Provider"}</th>
               <th>Last Message</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
-            {!isLoading && data.length > 0 ? (
+            {!isLoading && data && data.length > 0 ? (
               data.map((conversation) => (
                 <tr
                   className={
@@ -62,7 +60,7 @@ const Messages = () => {
 
                   <td>
                     <Link to={`/message/${conversation.id}`} className="link">
-                      {conversation.lastMessage.substring(0, 100)}...
+                      {conversation.lastMessage && conversation.lastMessage.substring(0, 100)}...
                     </Link>
                   </td>
                   <td>{moment(conversation.updatedAt).fromNow()}</td>
@@ -81,7 +79,16 @@ const Messages = () => {
                 </tr>
               ))
             ) : (
-              <div className="no-msg">No messages</div>
+              <tr>
+                <td colSpan="4" className="no-msg">
+                  <div>No messages yet</div>
+                  <p className="empty-message">
+                    {currentUser.isSeller 
+                      ? "When customers contact you about your services, messages will appear here."
+                      : "Contact service providers to discuss your home service needs."}
+                  </p>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

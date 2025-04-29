@@ -34,12 +34,12 @@ const Navbar = () => {
       <div className="container">
         <div className="logo">
           <Link className="link" to="/">
-            <span className="text">fiverr</span>
+            <span className="text">HomeServe</span>
             <span className="dot">.</span>
           </Link>
         </div>
         <div className="links">
-          <span>Fiverr Buisness</span>
+          <span>HomeServe Premium</span>
           <span>Explore</span>
           <span>English</span>
           {!currentUser && (
@@ -48,7 +48,7 @@ const Navbar = () => {
             </Link>
           )}
             
-          {!currentUser?.isSeller && <Link className="link" to="/register"><span>Become a Seller</span></Link>}
+          {!currentUser?.isSeller && <Link className="link" to="/register"><span>Become a Provider</span></Link>}
           {currentUser && (
             <div className="user" onClick={() => setOpen(!open)}>
               <img src={currentUser?.img || "./img/noavatar.png"} alt="" />
@@ -58,15 +58,15 @@ const Navbar = () => {
                   {currentUser?.isSeller && (
                     <>
                       <Link className="link" to="mygigs">
-                        Gigs
+                        My Services
                       </Link>
                       <Link className="link" to="add">
-                        Add New Gig
+                        Add New Service
                       </Link>
                     </>
                   )}
                   <Link className="link" to="orders">
-                    Orders
+                    Bookings
                   </Link>
                   <Link className="link" to="messages">
                     Messages
@@ -90,8 +90,12 @@ const Navbar = () => {
           <>
             <hr />
             <div className="menu">
-              <span>Test 01</span>
-              <span>Test 02</span>
+              <Link className="link" to="/gigs?cat=plumbing">Plumbing</Link>
+              <Link className="link" to="/gigs?cat=electrical">Electrical</Link>
+              <Link className="link" to="/gigs?cat=cleaning">Cleaning</Link>
+              <Link className="link" to="/gigs?cat=landscaping">Landscaping</Link>
+              <Link className="link" to="/gigs?cat=handyman">Handyman</Link>
+              <Link className="link" to="/gigs?cat=hvac">HVAC</Link>
             </div>
           </>
         ))}
