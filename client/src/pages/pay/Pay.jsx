@@ -14,30 +14,51 @@ const stripePromise = loadStripe(
 const Pay = () => {
   const { id } = useParams();
   const [clientSecret, setClientSecret] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const makeReq = async () => {
+    const createPaymentIntent = async () => {
       try {
-        const res = await request.post(`/gigs/${id}/order/stripe`);
-        setClientSecret(res.data.data);
+        const res = await request.post('/create-payment-intent', {
+          gigId: id,
+          amount: 1000, // Example amount in cents
+          currency: 'usd'
+        });
+        
+        if (!res.data.clientSecret) {
+          throw new Error("No client secret received");
+        }
+        
+        setClientSecret(res.data.clientSecret);
       } catch (err) {
-        console.log(err);
+        setError(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
       }
     };
-    makeReq();
-  }, []);
 
-  const appearance = {
-    theme: "stripe",
-  };
-  const options = {
-    clientSecret,
-    appearance,
-  };
+    createPaymentIntent();
+  }, [id]);
+
+  if (loading) return <div>Loading payment details...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="pay">
       {clientSecret && (
-        <Elements options={options} stripe={stripePromise}>
+        <Elements 
+          stripe={stripePromise}
+          options={{
+            clientSecret,
+            appearance: {
+              theme: 'stripe',
+              variables: {
+                colorPrimary: '#6772e5',
+              }
+            }
+          }}
+        >
           <CheckoutForm />
         </Elements>
       )}
