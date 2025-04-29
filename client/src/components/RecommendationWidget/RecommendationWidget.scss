@@ -1,0 +1,160 @@
+.recommendation-widget {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  
+    h2 {
+      color: #555;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  
+    .loading, .error, .no-results {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+  
+    .error {
+      color: #e74c3c;
+    }
+  
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+  
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+  
+        label {
+          font-weight: bold;
+          color: #555;
+        }
+  
+        input[type="range"] {
+          width: 150px;
+        }
+  
+        select {
+          padding: 8px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+        }
+      }
+    }
+  
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+  
+      .gig-card {
+        display: flex;
+        flex-direction: column;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+  
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+  
+        .gig-image {
+          height: 160px;
+          background-size: cover;
+          background-position: center;
+        }
+  
+        .gig-content {
+          padding: 15px;
+  
+          h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #444;
+          }
+  
+          .gig-desc {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+  
+          .gig-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+  
+            .gig-rating {
+              display: flex;
+              align-items: center;
+              gap: 5px;
+  
+              .stars {
+                color: #ffc107;
+                letter-spacing: -1px;
+              }
+  
+              .rating-value {
+                font-weight: bold;
+                color: #555;
+              }
+            }
+  
+            .gig-price {
+              font-weight: bold;
+              color: #1dbf73;
+            }
+          }
+  
+          .recommendation-reason {
+            font-size: 12px;
+            color: #777;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+  
+            span {
+              font-weight: bold;
+            }
+          }
+        }
+      }
+    }
+  
+    .refresh-button {
+      display: block;
+      margin: 0 auto;
+      padding: 10px 20px;
+      background-color: #1dbf73;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+  
+      &:hover {
+        background-color: #19a463;
+      }
+    }
+  }
